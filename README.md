@@ -23,3 +23,16 @@ npm run start
 ## Notes
 - Camera requires permission on first use.
 - Daily calories reset automatically at midnight (local device time).
+
+## Supabase setup
+
+After adding the values to `.env`, run the SQL migration
+`supabase/migrations/20261112_fix_data_api_access.sql` in the Supabase SQL Editor.
+Then restart Expo with:
+
+```bash
+npx expo start -c
+```
+
+The migration grants the Data API access required by the app and creates the
+`meal-images` storage bucket used for meal photos.

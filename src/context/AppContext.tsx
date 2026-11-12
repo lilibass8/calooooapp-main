@@ -95,6 +95,7 @@ export const AppProvider: React.FC<React.PropsWithChildren> = ({ children }) => 
         await remoteData.upsertUser(profileId, nextUser);
       } catch (error) {
         console.warn("Failed to save profile to Supabase:", error);
+        throw error;
       }
     }
   };
@@ -128,6 +129,7 @@ export const AppProvider: React.FC<React.PropsWithChildren> = ({ children }) => 
         await remoteData.upsertSettings(profileId, nextSettings);
       } catch (error) {
         console.warn("Failed to save settings to Supabase:", error);
+        throw error;
       }
     }
   };

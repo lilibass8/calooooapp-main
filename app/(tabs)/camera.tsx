@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-import { Image, Pressable, ScrollView, Text, View } from "react-native";
+import { Alert, Image, Pressable, ScrollView, Text, View } from "react-native";
 import { CameraView, useCameraPermissions } from "expo-camera";
 import { Ionicons } from "@expo/vector-icons";
 import { PrimaryButton } from "../../src/components/PrimaryButton";
@@ -94,8 +94,13 @@ const CameraScreen = () => {
       portion: selectedPortion,
       estimationSource: isCaloriesEdited ? "manual-adjustment" : "preset"
     };
-    await addMeal(meal);
-    resetReview();
+    try {
+      await addMeal(meal);
+      resetReview();
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "تعذر حفظ الوجبة";
+      Alert.alert("تعذر حفظ الوجبة", `${message}\n\nتأكد من إعداد جداول Supabase و bucket الصور.`);
+    }
   };
 
   if (!permission) {

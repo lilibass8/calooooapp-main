@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { KeyboardAvoidingView, Platform, ScrollView, Text, View } from "react-native";
+import { Alert, KeyboardAvoidingView, Platform, ScrollView, Text, View } from "react-native";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { useApp } from "../src/context/AppContext";
@@ -33,13 +33,18 @@ const OnboardingScreen = () => {
 
   const handleContinue = async () => {
     if (!isValid()) return;
-    await setUser({
-      name: name.trim(),
-      weightKg: Number(weight),
-      heightCm: Number(height),
-      dailyCalorieGoal: Number(goal)
-    });
-    router.replace("/(tabs)/home");
+    try {
+      await setUser({
+        name: name.trim(),
+        weightKg: Number(weight),
+        heightCm: Number(height),
+        dailyCalorieGoal: Number(goal)
+      });
+      router.replace("/(tabs)/home");
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "تعذر حفظ البيانات";
+      Alert.alert("تعذر الحفظ", `${message}\n\nتأكد من تطبيق ملف Supabase migration ثم أعد المحاولة.`);
+    }
   };
 
   const previewGoal = Number(goal) > 0 ? Number(goal) : 2100;

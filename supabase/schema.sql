@@ -39,6 +39,11 @@ alter table public.profiles enable row level security;
 alter table public.settings enable row level security;
 alter table public.meals enable row level security;
 
+grant usage on schema public to anon, authenticated;
+grant select, insert, update on table public.profiles to anon, authenticated;
+grant select, insert, update on table public.settings to anon, authenticated;
+grant select, insert, update on table public.meals to anon, authenticated;
+
 -- This app currently uses a device-generated profile ID (no auth).
 -- Keep these permissive while bootstrapping; tighten later when auth is added.
 create policy "public read profiles"
@@ -68,8 +73,13 @@ on conflict (id) do nothing;
 
 create policy "public upload meal images"
   on storage.objects for insert
+  to anon, authenticated
   with check (bucket_id = 'meal-images');
 
 create policy "public read meal images"
   on storage.objects for select
+  to anon, authenticated
   using (bucket_id = 'meal-images');
+
+grant usage on schema storage to anon, authenticated;
+grant select, insert, update on table storage.objects to anon, authenticated;
