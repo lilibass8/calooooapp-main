@@ -64,10 +64,15 @@ const toMeal = (data: DbMeal): Meal => ({
   estimationSource: data.estimation_source ?? undefined
 });
 
-const readLocalFileAsArrayBuffer = async (uri: string): Promise<ArrayBuffer> => {
+// React Native's Blob implementation does not expose blob.arrayBuffer() on
+// all Expo runtimes. Supabase Storage accepts the Blob returned by fetch
+// directly, so avoid calling the missing method here.
+const readLocalFileAsBlob = async (uri: string): Promise<Blob> => {
   const response = await fetch(uri);
-  const blob = await response.blob();
-  return blob.arrayBuffer();
+  if (!response.ok) {
+    throw new Error(`تعذر قراءة الصورة (${response.status})`);
+  }
+  return response.blob();
 };
 
 const toContentType = (uri: string): string => {
@@ -161,7 +166,7 @@ export const remoteData = {
     const client = assertClient();
     const imagePath = `${profileId}/${meal.id}.jpg`;
     const contentType = toContentType(meal.imageUri);
-    const file = await readLocalFileAsArrayBuffer(meal.imageUri);
+    const file = await readLocalFileAsBlob(meal.imageUri);
 
     const upload = await client.storage.from(SUPABASE_BUCKET).upload(imagePath, file, {
       contentType,
