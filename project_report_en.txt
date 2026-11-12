@@ -1,0 +1,561 @@
+CalorieSnap Project Report
+==========================
+
+1. General Project Information
+------------------------------
+Project Name:
+CalorieSnap
+
+Project Type:
+A mobile and web application built with Expo and React Native for meal logging and daily calorie tracking.
+
+Current Version:
+1.0.0
+
+Short Description:
+CalorieSnap is designed to help users record daily meals, save meal photos, estimate calories in a guided way, and monitor their daily calorie goal through a modern Arabic-first user interface.
+
+
+2. Project Idea
+---------------
+The core idea of the project is to build a practical and user-friendly nutrition tracking app. Instead of forcing the user to calculate everything manually from the beginning, the app provides a simple visual workflow:
+
+- The user enters basic profile data once.
+- The user takes a photo of a meal.
+- The user selects the meal type and portion size.
+- The app provides a reasonable calorie estimate.
+- The meal is saved to history.
+- The user can review daily progress and past meals.
+
+The current version does not claim to have real computer vision or automatic food recognition. Instead, it uses a conservative and transparent workflow that prevents fake calorie results by requiring the user to confirm that the image is actually food and then choose the category and size.
+
+
+3. Problem the Project Solves
+-----------------------------
+Many calorie tracking apps are:
+
+- crowded and hard to use,
+- heavily dependent on long manual text input,
+- based on repeated food database searches,
+- or misleading when they claim to estimate calories automatically without accuracy.
+
+CalorieSnap attempts to solve these problems by offering:
+
+- an Arabic-first experience,
+- a clear scanning workflow,
+- protection against obviously wrong results such as assigning calories to a key or an object,
+- a guided calorie estimation flow instead of fake AI,
+- local storage with optional Supabase sync.
+
+
+4. Project Goals
+----------------
+The main goals of the project are:
+
+- simplify daily meal logging,
+- improve visibility of the user's calorie goal,
+- present meal history in a clear visual way,
+- provide a codebase that can be extended later with real AI, authentication, notifications, and analytics.
+
+
+5. Target Audience
+------------------
+The target audience includes:
+
+- users who want an easy way to track calories,
+- Arabic-speaking users who prefer a localized UI,
+- people who want fast meal logging without repeated manual search,
+- users who want a lightweight app that can run on mobile and web.
+
+
+6. Current Solution Approach
+----------------------------
+The current solution is based on the principle of "ease of use with honest constraints".
+
+Instead of pretending to analyze the image using non-existent AI, the app uses a guided workflow:
+
+1. The user takes a picture.
+2. The app shows a review screen.
+3. The user confirms whether the image contains edible food.
+4. If it is not food, calorie counting is rejected.
+5. If it is food, the user selects a meal category.
+6. The user selects a portion size.
+7. The app generates a calorie estimate from a fixed matrix.
+8. The user can manually adjust the number before saving.
+
+This makes the system more honest, more stable, and much less likely to produce nonsense results.
+
+
+7. Programming Languages Used
+-----------------------------
+The project uses the following programming and configuration languages:
+
+1. TypeScript
+- Main language for application logic and UI.
+- Used in screens, components, services, types, and app state.
+
+2. SQL
+- Used for Supabase schema definition and database policies.
+
+3. JSON
+- Used in project configuration files such as app.json and package.json.
+
+4. JavaScript runtime ecosystem
+- Through Node.js and npm for dependency management and build tooling.
+
+
+8. Tools, Libraries, and Technologies
+-------------------------------------
+Main tools and technologies used in the project:
+
+1. Expo
+- Core platform used to build and run the app on iOS, Android, and web.
+
+2. React Native
+- Used to build the cross-platform user interface.
+
+3. Expo Router
+- Used for route-based screen navigation.
+
+4. Expo Camera
+- Used to access the device camera and capture meal photos.
+
+5. React Native Safe Area Context
+- Used to properly handle safe areas on modern devices.
+
+6. AsyncStorage
+- Used for local persistence of user data, meals, and settings.
+
+7. Supabase
+- Used as an optional cloud backend for syncing profile, meals, and settings.
+- Also used for storing meal images in a bucket.
+
+8. react-native-web
+- Added to support web export and browser deployment.
+
+9. Metro Bundler
+- Used by Expo for bundling the application.
+
+10. Cloudflare Pages readiness
+- The app has been configured for static web export through web.output = static.
+- This makes it suitable for deployment on Cloudflare Pages.
+
+
+9. Project Structure
+--------------------
+The project is organized into clear layers:
+
+1. app
+- Main screens and navigation.
+- Includes onboarding, home, camera, history, and settings.
+
+2. components
+- Reusable UI components such as:
+  Card
+  PrimaryButton
+  TextInputField
+  ProgressBar
+  EmptyState
+  ChoiceChip
+
+3. context
+- Contains AppContext, which manages global app state.
+
+4. services
+- Contains reusable business logic and data services such as:
+  calorieEstimator
+  remoteData
+  supabase
+  deviceProfile
+  meal-utils
+
+5. storage
+- Contains local persistence logic using AsyncStorage.
+
+6. types
+- Contains shared TypeScript data definitions.
+
+7. theme
+- Contains shared colors, spacing, radii, and shadows.
+
+8. supabase
+- Contains database schema and migration files.
+
+
+10. Technical Architecture
+--------------------------
+The app uses a state-driven front-end architecture with two data sources:
+
+Source 1:
+Local storage through AsyncStorage
+
+Source 2:
+Optional cloud sync through Supabase
+
+How it works:
+
+- AppContext loads the global state when the app starts.
+- A device-specific profile ID is created if it does not already exist.
+- If Supabase environment variables are available, the app attempts to fetch remote data.
+- If remote sync fails or is unavailable, the app falls back to local storage.
+- Meals are always saved locally, and optionally synced to Supabase with image upload.
+
+This architecture provides:
+
+- partial offline capability,
+- optional cloud persistence,
+- flexibility for future growth.
+
+
+11. Application Data Flow
+-------------------------
+General app flow:
+
+1. The user opens the app.
+2. Global state and profile are loaded.
+3. If no user exists, the app redirects to onboarding.
+4. After saving the basic profile, the user goes to the home screen.
+5. During meal capture:
+   - the camera takes a photo,
+   - a review screen appears,
+   - the user selects whether the image is food,
+   - the user selects meal category and portion,
+   - calories are estimated,
+   - the meal is saved.
+6. The home screen shows daily statistics.
+7. The history screen shows all saved meals grouped by date.
+
+
+12. Main Data Models
+--------------------
+Important data types in the project:
+
+1. UserProfile
+- name
+- weightKg
+- heightCm
+- dailyCalorieGoal
+
+2. Meal
+- id
+- calories
+- imageUri
+- imagePath
+- createdAt
+- category
+- portion
+- estimationSource
+
+3. Settings
+- darkMode
+- notificationsEnabled
+
+4. DailyStats
+- goal
+- consumed
+- remaining
+- progress
+- mealCount
+
+5. MealHistorySection
+- key
+- title
+- totalCalories
+- data
+
+
+13. Meal Categories and Calorie Estimation
+------------------------------------------
+The project uses a fixed calorie matrix based on meal category and portion size.
+
+Current categories:
+
+- cooked meal
+- sandwich or burger
+- pizza or pastry
+- salad
+- dessert
+- drink
+- fruit or snack
+
+Portions:
+
+- small
+- medium
+- large
+
+Estimation logic:
+
+- When a category and portion are selected, calories are retrieved from a fixed matrix in calorieEstimator.
+- If the user edits the result manually, the estimation source becomes manual-adjustment.
+- If an older meal comes from an older schema, it is treated as legacy.
+
+
+14. Database and Cloud Storage
+------------------------------
+The project uses Supabase when the following environment variables are provided:
+
+- EXPO_PUBLIC_SUPABASE_URL
+- EXPO_PUBLIC_SUPABASE_ANON_KEY
+- EXPO_PUBLIC_SUPABASE_BUCKET
+
+Main database tables:
+
+1. profiles
+- stores basic user profile data.
+
+2. settings
+- stores general user settings.
+
+3. meals
+- stores meals, calories, images, category, portion, and estimation source.
+
+Storage:
+- a bucket named meal-images is used for uploaded meal images.
+
+Security:
+- Row Level Security is enabled.
+- Current policies are intentionally permissive because the project is still using a bootstrap model without real authentication.
+
+
+15. Local Storage
+-----------------
+The app uses AsyncStorage to store:
+
+- user profile data,
+- meal records,
+- settings,
+- last daily reset date,
+- device-specific profile ID.
+
+Important behavior:
+- The project no longer deletes the entire meal history every day.
+- Instead, it keeps the full meal archive and derives "today meals" at render time.
+
+
+16. Current User Interfaces
+---------------------------
+The application currently includes five main screens:
+
+1. Onboarding
+- input for name, weight, height, and calorie goal
+- premium welcome section
+- basic live profile preview
+
+2. Home
+- personalized greeting
+- daily goal summary
+- consumed and remaining calories
+- meal count
+- quick action to open scan screen
+- latest meals from today
+
+3. Camera
+- take photo
+- review captured image
+- mark whether the image is edible food or not
+- select meal category
+- select portion size
+- view estimated calories
+- manually edit calories
+- save meal
+
+4. History
+- view all meals
+- grouped by date
+- shows image, category, portion, and calories
+
+5. Settings
+- account summary
+- update weight, height, and daily calorie goal
+
+
+17. UI Design and Visual Identity
+---------------------------------
+The current app UI follows:
+
+- Arabic-first design
+- Wellness Premium visual style
+- Light theme
+
+Design characteristics:
+
+- warm soft colors,
+- rounded cards,
+- Arabic text aligned to the right,
+- centralized theme values in theme/design.ts,
+- primary and secondary buttons,
+- chips for category and portion selection,
+- refined bottom tab navigation.
+
+This design direction aims to make the app:
+
+- visually clearer,
+- more modern,
+- more suitable for Arabic-speaking users.
+
+
+18. Key Product and Engineering Decisions
+-----------------------------------------
+Important decisions made in the project:
+
+1. No fake AI
+- Random calorie generation was removed and replaced with explicit guided logic.
+
+2. Optional cloud sync
+- The app works locally even without Supabase.
+
+3. Backward compatibility
+- If the meal schema is older, the app falls back rather than breaking.
+
+4. Separation of concerns
+- UI components in components.
+- business logic in services.
+- global state in context.
+
+5. Deriving daily data instead of deleting history
+- This preserves the user's full meal archive.
+
+
+19. Current Features
+--------------------
+- capture basic user profile
+- save profile data
+- open camera and take photos
+- reject calorie counting for non-food items
+- select meal category
+- select portion size
+- guided calorie estimation
+- manual calorie adjustment
+- save meal locally
+- upload meal to Supabase when configured
+- upload meal image to Supabase Storage
+- display daily dashboard
+- display grouped meal history
+- export a static web build
+
+
+20. Current Limitations
+-----------------------
+The project still has some limitations:
+
+1. No real image AI
+- The app does not automatically detect food from the image.
+
+2. No real authentication
+- It relies on a generated device profile ID.
+
+3. Dark mode is not implemented as a real active experience
+- The current UI is intentionally focused on the light theme.
+
+4. Notifications are not implemented
+- There is no working notification system yet.
+
+5. Calorie estimation is approximate
+- It is based on a fixed matrix, not real nutrition analysis.
+
+6. On web, camera behavior depends on browser support, HTTPS, and permissions.
+
+
+21. Challenges Addressed by the Project
+---------------------------------------
+The project addresses several technical and product challenges:
+
+- how to make meal logging fast and simple,
+- how to avoid obviously incorrect calorie results without real AI,
+- how to support both local-first and cloud-synced behavior,
+- how to build a polished Arabic experience without overcomplicating the app,
+- how to preserve full history while calculating daily-only statistics.
+
+
+22. How the "a key has calories" Problem Was Solved
+---------------------------------------------------
+This is one of the most important improvements in the project.
+
+In the older version, the app could produce a random calorie number regardless of what the image contained.
+
+In the current version, this was solved by:
+
+- removing random calorie generation entirely,
+- disconnecting calories from the photo alone,
+- adding an explicit decision step asking whether the image is food,
+- stopping the flow if the item is not edible,
+- showing no calories in that case,
+- preventing the item from being saved as a meal.
+
+This makes the logic much more reliable and much more honest.
+
+
+23. Main Commands for Development and Build
+------------------------------------------
+Main project commands:
+
+- npm install
+- npm run start
+- npm run ios
+- npm run android
+- npm run web
+- npm run export:web
+
+Type check command:
+- npx tsc --noEmit
+
+
+24. Web Support and Hosting
+---------------------------
+The project is now prepared for static web export through:
+
+- app.json => web.output = static
+- package.json => export:web
+
+The following was tested successfully:
+- npm run export:web
+
+The output is generated in the dist folder.
+
+This means the project can be deployed to static hosting platforms such as:
+
+- Cloudflare Pages
+- Netlify
+- Vercel
+
+Note:
+Camera functionality on web requires HTTPS and browser support.
+
+
+25. Future Development Opportunities
+------------------------------------
+The project can be extended in several directions:
+
+1. add real AI or computer vision for food analysis,
+2. add real user authentication,
+3. add notification and reminder workflows,
+4. add weekly and monthly insights,
+5. add richer nutrition breakdown such as protein, carbs, and fats,
+6. add multi-device sync,
+7. add full dark mode support,
+8. add reporting and sharing features.
+
+
+26. Overall Evaluation
+----------------------
+In its current state, CalorieSnap is a structured and extensible project that provides a practical meal logging experience. Its main strength is not artificial intelligence, but rather clarity, honesty in workflow, and a modern Arabic-oriented user experience.
+
+It is a strong foundation for a personal nutrition tracking product and can be expanded later into a more intelligent and more production-ready platform.
+
+
+27. Conclusion
+--------------
+CalorieSnap is a nutrition tracking application built with Expo, React Native, and TypeScript. It is based on:
+
+- a modern Arabic-first interface,
+- photo-based meal entry,
+- guided manual classification,
+- structured calorie estimation,
+- local persistence,
+- optional Supabase sync,
+- static web export capability.
+
+The project solves a practical problem in a realistic way: helping users track meals easily without unnecessary complexity while reducing illogical system behavior as much as possible.
+
+End of report.
