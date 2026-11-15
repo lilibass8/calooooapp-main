@@ -1,14 +1,16 @@
 import React, { useEffect, useState } from "react";
-import { ScrollView, Text, View } from "react-native";
+import { Alert, ScrollView, Text, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { Card } from "../../src/components/Card";
 import { TextInputField } from "../../src/components/TextInputField";
 import { PrimaryButton } from "../../src/components/PrimaryButton";
 import { useApp } from "../../src/context/AppContext";
 import { colors, radii, spacing } from "../../src/theme/design";
+import { t } from "../../src/i18n";
 
 const SettingsScreen = () => {
-  const { user, setUser, dailyStats } = useApp();
+  const { user, setUser, dailyStats, signOut, setLanguage, language } = useApp();
+  const tx = (key: Parameters<typeof t>[1]) => t(language, key);
   const [weight, setWeight] = useState(user ? String(user.weightKg) : "");
   const [height, setHeight] = useState(user ? String(user.heightCm) : "");
   const [goal, setGoal] = useState(user ? String(user.dailyCalorieGoal) : "");
@@ -32,6 +34,14 @@ const SettingsScreen = () => {
       heightCm: heightNum,
       dailyCalorieGoal: goalNum
     });
+  };
+
+  const handleSignOut = async () => {
+    try {
+      await signOut();
+    } catch (error) {
+      Alert.alert(tx("unableLogout"), error instanceof Error ? error.message : tx("tryAgain"));
+    }
   };
 
   return (
@@ -63,20 +73,20 @@ const SettingsScreen = () => {
             <Ionicons name="person-outline" size={28} color={colors.white} />
           </View>
           <View style={{ flex: 1, gap: 4 }}>
-            <Text style={{ color: "rgba(255,255,255,0.74)", textAlign: "right" }}>الحساب الصحي</Text>
+            <Text style={{ color: "rgba(255,255,255,0.74)", textAlign: "right" }}>{tx("healthAccount")}</Text>
             <Text style={{ color: colors.white, fontSize: 24, fontWeight: "800", textAlign: "right" }}>
-              {user?.name ?? "مستخدم جديد"}
+              {user?.name ?? tx("newUser")}
             </Text>
             <Text style={{ color: "rgba(255,255,255,0.78)", textAlign: "right" }}>
-              عدّل بياناتك الأساسية ليبقى هدفك اليومي دقيقًا.
+              {tx("updateProfile")}
             </Text>
           </View>
         </View>
 
         <View style={{ flexDirection: "row-reverse", gap: spacing.sm }}>
           {[
-            { label: "الهدف اليومي", value: `${user?.dailyCalorieGoal ?? 0} kcal` },
-            { label: "استهلاك اليوم", value: `${dailyStats.consumed} kcal` }
+            { label: tx("dailyGoal"), value: `${user?.dailyCalorieGoal ?? 0} ${tx("kcal")}` },
+            { label: tx("consumed"), value: `${dailyStats.consumed} ${tx("kcal")}` }
           ].map((item) => (
             <View
               key={item.label}
@@ -100,38 +110,55 @@ const SettingsScreen = () => {
 
       <Card style={{ gap: spacing.md }}>
         <Text style={{ fontSize: 20, fontWeight: "800", color: colors.text, textAlign: "right" }}>
-          البيانات الأساسية
+          {tx("basicDetails")}
         </Text>
         <Text style={{ color: colors.textMuted, textAlign: "right", lineHeight: 22 }}>
-          هذه القيم تُستخدم في الواجهة فقط لإظهار ملفك الصحي وتقدّمك نحو الهدف.
+          {tx("profileDetailsDescription")}
         </Text>
         <TextInputField
-          label="الوزن (كجم)"
+          label={tx("weight")}
           value={weight}
           onChangeText={setWeight}
           keyboardType="numeric"
-          helperText="يمكنك تحديثه متى ما تغيّر وزنك."
+          helperText={tx("updateWhenChanged")}
         />
         <TextInputField
-          label="الطول (سم)"
+          label={tx("height")}
           value={height}
           onChangeText={setHeight}
           keyboardType="numeric"
-          helperText="يظهر ضمن ملخص حسابك الصحي."
+          helperText={tx("shownInProfile")}
         />
         <TextInputField
-          label="هدف السعرات اليومي"
+          label={tx("calorieGoal")}
           value={goal}
           onChangeText={setGoal}
           keyboardType="numeric"
-          helperText="هو الرقم الذي نبني عليه مؤشر التقدّم اليومي."
+          helperText={tx("progressBasis")}
         />
         <PrimaryButton
-          label="حفظ التعديلات"
-          subtitle="تحديث بياناتك الحالية"
+          label={tx("saveChanges")}
+          subtitle={tx("updateCurrent")}
           onPress={handleSave}
           icon={<Ionicons name="save-outline" size={18} color={colors.white} />}
         />
+        <PrimaryButton
+          label={tx("logout")}
+          subtitle={tx("logoutDevice")}
+          onPress={handleSignOut}
+          variant="secondary"
+          icon={<Ionicons name="log-out-outline" size={18} color={colors.text} />}
+        />
+      </Card>
+
+      <Card style={{ gap: spacing.md }}>
+        <Text style={{ fontSize: 20, fontWeight: "800", color: colors.text, textAlign: "right" }}>
+          {tx("language")}
+        </Text>
+        <View style={{ flexDirection: "row-reverse", gap: spacing.sm }}>
+          <PrimaryButton label={tx("arabic")} onPress={() => setLanguage("ar")} variant={language === "ar" ? "primary" : "secondary"} style={{ flex: 1 }} />
+          <PrimaryButton label={tx("english")} onPress={() => setLanguage("en")} variant={language === "en" ? "primary" : "secondary"} style={{ flex: 1 }} />
+        </View>
       </Card>
     </ScrollView>
   );

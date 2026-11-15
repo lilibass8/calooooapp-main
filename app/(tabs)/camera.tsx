@@ -15,6 +15,7 @@ import {
 import { useApp } from "../../src/context/AppContext";
 import { Meal, MealCategory, MealPortion } from "../../src/types";
 import { colors, radii, shadows, spacing } from "../../src/theme/design";
+import { t } from "../../src/i18n";
 
 type ScanCategorySelection = MealCategory | "not-food" | null;
 
@@ -27,7 +28,8 @@ const CameraScreen = () => {
   const [estimatedCalories, setEstimatedCalories] = useState<number | null>(null);
   const [caloriesInput, setCaloriesInput] = useState("");
   const [isCaloriesEdited, setIsCaloriesEdited] = useState(false);
-  const { addMeal } = useApp();
+  const { addMeal, language } = useApp();
+  const tx = (key: Parameters<typeof t>[1]) => t(language, key);
 
   const handleTakePhoto = async () => {
     if (!cameraRef.current) return;
@@ -98,15 +100,15 @@ const CameraScreen = () => {
       await addMeal(meal);
       resetReview();
     } catch (error) {
-      const message = error instanceof Error ? error.message : "تعذر حفظ الوجبة";
-      Alert.alert("تعذر حفظ الوجبة", `${message}\n\nتأكد من إعداد جداول Supabase و bucket الصور.`);
+      const message = error instanceof Error ? error.message : tx("unableSave");
+      Alert.alert(tx("unableSave"), `${message}\n\n${language === "ar" ? "تأكد من إعداد جداول Supabase و bucket الصور." : "Check your Supabase tables and image bucket setup."}`);
     }
   };
 
   if (!permission) {
     return (
       <View style={{ flex: 1, alignItems: "center", justifyContent: "center", backgroundColor: colors.background }}>
-        <Text style={{ color: colors.text, fontWeight: "700" }}>جاري تجهيز الكاميرا...</Text>
+        <Text style={{ color: colors.text, fontWeight: "700" }}>{tx("cameraPreparing")}</Text>
       </View>
     );
   }
@@ -129,12 +131,12 @@ const CameraScreen = () => {
             <Ionicons name="camera-outline" size={28} color={colors.primaryStrong} />
           </View>
           <Text style={{ fontSize: 22, fontWeight: "800", color: colors.text, textAlign: "center" }}>
-            نحتاج إذن الكاميرا
+            {tx("cameraPermissionTitle")}
           </Text>
           <Text style={{ color: colors.textMuted, textAlign: "center", lineHeight: 22 }}>
-            حتى نسمح لك بتصوير الوجبات ثم مراجعتها قبل تسجيل السعرات داخل يومك.
+            {tx("cameraPermissionDescription")}
           </Text>
-          <PrimaryButton label="تفعيل الكاميرا" onPress={requestPermission} />
+          <PrimaryButton label={tx("enableCamera")} onPress={requestPermission} />
         </Card>
       </View>
     );
@@ -167,22 +169,21 @@ const CameraScreen = () => {
             />
             <Card muted style={{ gap: 8 }}>
               <Text style={{ color: colors.text, fontWeight: "800", textAlign: "right" }}>
-                راجع الصورة قبل الحفظ
+                {tx("reviewPhoto")}
               </Text>
               <Text style={{ color: colors.textMuted, textAlign: "right", lineHeight: 22 }}>
-                التطبيق لن يعطي أي سعرات من الصورة وحدها. لازم تحدد إذا كانت الصورة طعامًا
-                فعلاً، ثم تختار الفئة الغذائية والحجم.
+                {tx("photoRules")}
               </Text>
             </Card>
           </View>
 
           <Card style={{ gap: spacing.md }}>
             <Text style={{ color: colors.text, fontSize: 18, fontWeight: "800", textAlign: "right" }}>
-              هل ما في الصورة شيء يؤكل؟
+              {tx("edibleQuestion")}
             </Text>
             <ChoiceChip
-              title="ليست مادة غذائية"
-              subtitle="مثل مفتاح، جهاز، كوب فارغ، أدوات أو أي عنصر غير مأكول"
+              title={tx("notFood")}
+              subtitle={tx("notFoodDescription")}
               selected={selectedCategory === "not-food"}
               onPress={() => setSelectedCategory("not-food")}
               leading={<Ionicons name="close-circle-outline" size={22} color={colors.danger} />}
@@ -191,8 +192,8 @@ const CameraScreen = () => {
               {mealCategoryOptions.map((option) => (
                 <ChoiceChip
                   key={option.value}
-                  title={option.label}
-                  subtitle={option.description}
+                  title={language === "ar" ? option.label : option.labelEn}
+                  subtitle={language === "ar" ? option.description : option.descriptionEn}
                   selected={selectedCategory === option.value}
                   onPress={() => setSelectedCategory(option.value)}
                   leading={
@@ -206,14 +207,13 @@ const CameraScreen = () => {
           {selectedCategory === "not-food" ? (
             <Card muted style={{ gap: spacing.md }}>
               <Text style={{ color: colors.danger, fontWeight: "800", textAlign: "right" }}>
-                لن يتم احتساب سعرات لهذه الصورة
+                {tx("noCalories")}
               </Text>
               <Text style={{ color: colors.textMuted, textAlign: "right", lineHeight: 22 }}>
-                بما أنك حددت أن العنصر ليس طعامًا، فلن نعرض أي سعرات أو نحفظه ضمن السجل.
-                يمكنك إعادة التصوير عند وجود وجبة فعلية.
+                {tx("noCaloriesDescription")}
               </Text>
               <PrimaryButton
-                label="إعادة التصوير"
+                label={tx("retake")}
                 onPress={resetReview}
                 variant="secondary"
                 icon={<Ionicons name="camera-reverse-outline" size={18} color={colors.text} />}
@@ -226,18 +226,18 @@ const CameraScreen = () => {
               <Card style={{ gap: spacing.md }}>
                 <View style={{ gap: 4 }}>
                   <Text style={{ color: colors.text, fontSize: 18, fontWeight: "800", textAlign: "right" }}>
-                    حجم الوجبة
+                    {tx("mealSize")}
                   </Text>
                   <Text style={{ color: colors.textMuted, textAlign: "right" }}>
-                    {getMealCategoryDescription(selectedCategory)}
+                    {getMealCategoryDescription(selectedCategory, language)}
                   </Text>
                 </View>
                 <View style={{ gap: spacing.sm }}>
                   {mealPortionOptions.map((portion) => (
                     <ChoiceChip
                       key={portion.value}
-                      title={portion.label}
-                      subtitle={portion.description}
+                      title={language === "ar" ? portion.label : portion.labelEn}
+                      subtitle={language === "ar" ? portion.description : portion.descriptionEn}
                       selected={selectedPortion === portion.value}
                       onPress={() => setSelectedPortion(portion.value)}
                     />
@@ -248,41 +248,41 @@ const CameraScreen = () => {
               <Card style={{ gap: spacing.md }}>
                 <View style={{ gap: 4 }}>
                   <Text style={{ color: colors.text, fontSize: 18, fontWeight: "800", textAlign: "right" }}>
-                    تقدير السعرات
+                    {tx("calorieEstimate")}
                   </Text>
                   <Text style={{ color: colors.textMuted, textAlign: "right", lineHeight: 22 }}>
-                    نملأ الحقل بتقدير افتراضي حسب الفئة والحجم، ويمكنك تعديله إذا لزم.
+                    {tx("defaultEstimate")}
                   </Text>
                 </View>
 
                 <TextInputField
-                  label="السعرات"
+                  label={tx("calories")}
                   value={caloriesInput}
                   onChangeText={(value) => {
                     setCaloriesInput(value);
                     setIsCaloriesEdited(true);
                   }}
                   keyboardType="numeric"
-                  placeholder={selectedPortion ? "مثال: 550" : "اختر الحجم أولًا"}
+                  placeholder={selectedPortion ? tx("exampleCalories") : tx("chooseSizeFirst")}
                   editable={Boolean(selectedPortion)}
                   helperText={
                     estimatedCalories !== null
-                      ? `التقدير الافتراضي: ${estimatedCalories} kcal`
-                      : "لن يظهر أي رقم حتى تختار حجم الوجبة."
+                      ? `${tx("defaultEstimateLabel")}: ${estimatedCalories} ${tx("kcal")}`
+                      : tx("chooseSizeMessage")
                   }
                 />
 
                 <View style={{ flexDirection: "row-reverse", gap: spacing.sm }}>
                   <PrimaryButton
-                    label="إضافة إلى يومي"
-                    subtitle="حفظ الصورة والفئة والسعرات"
+                    label={tx("addToToday")}
+                    subtitle={tx("saveMealDetails")}
                     onPress={handleAddMeal}
                     disabled={!selectedPortion || !caloriesInput}
                     style={{ flex: 1 }}
                     icon={<Ionicons name="add-circle-outline" size={18} color={colors.white} />}
                   />
                   <PrimaryButton
-                    label="إعادة التصوير"
+                    label={tx("retake")}
                     onPress={resetReview}
                     variant="secondary"
                     style={{ flex: 1 }}
@@ -312,11 +312,10 @@ const CameraScreen = () => {
               }}
             >
               <Text style={{ color: colors.text, fontWeight: "800", textAlign: "right" }}>
-                صوّر الوجبة بوضوح
+                {tx("takePhotoClearly")}
               </Text>
               <Text style={{ color: colors.textMuted, textAlign: "right", lineHeight: 22 }}>
-                صوّر الطعام نفسه فقط. إذا كانت الصورة لشيء غير مأكول فلن نعرض أي سعرات أو نحفظ
-                النتيجة.
+                {tx("photoOnlyFood")}
               </Text>
             </Card>
             <View style={{ alignItems: "center", gap: spacing.sm }}>
@@ -337,7 +336,7 @@ const CameraScreen = () => {
               >
                 <Ionicons name="camera" size={30} color={colors.primaryStrong} />
               </Pressable>
-              <Text style={{ color: colors.white, fontWeight: "700" }}>التقاط صورة</Text>
+              <Text style={{ color: colors.white, fontWeight: "700" }}>{tx("capturePhoto")}</Text>
             </View>
           </View>
         </View>

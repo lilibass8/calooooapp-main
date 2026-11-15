@@ -3,6 +3,8 @@ import { View } from "react-native";
 import { Tabs } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { colors, radii, shadows } from "../../src/theme/design";
+import { useApp } from "../../src/context/AppContext";
+import { t } from "../../src/i18n";
 
 const TabIcon = ({
   name,
@@ -34,6 +36,8 @@ const TabIcon = ({
 };
 
 const TabsLayout = () => {
+  const { language } = useApp();
+  const tx = (key: Parameters<typeof t>[1]) => t(language, key);
   return (
     <Tabs
       screenOptions={{
@@ -72,8 +76,8 @@ const TabsLayout = () => {
       <Tabs.Screen
         name="home"
         options={{
-          title: "الرئيسية",
-          headerTitle: "لوحة اليوم",
+          title: tx("home"),
+          headerTitle: tx("todayDashboard"),
           tabBarIcon: ({ color, focused }) => (
             <TabIcon name="home" color={color as string} focused={focused} />
           )
@@ -82,8 +86,8 @@ const TabsLayout = () => {
       <Tabs.Screen
         name="camera"
         options={{
-          title: "المسح",
-          headerTitle: "مسح الوجبة",
+          title: tx("scan"),
+          headerTitle: tx("scanMeal"),
           tabBarIcon: ({ color, focused }) => (
             <TabIcon name="camera" color={color as string} focused={focused} />
           )
@@ -92,8 +96,8 @@ const TabsLayout = () => {
       <Tabs.Screen
         name="history"
         options={{
-          title: "السجل",
-          headerTitle: "سجل الوجبات",
+          title: tx("history"),
+          headerTitle: tx("mealHistory"),
           tabBarIcon: ({ color, focused }) => (
             <TabIcon name="time-outline" color={color as string} focused={focused} />
           )
@@ -102,8 +106,8 @@ const TabsLayout = () => {
       <Tabs.Screen
         name="settings"
         options={{
-          title: "الحساب",
-          headerTitle: "الإعدادات",
+          title: tx("account"),
+          headerTitle: tx("settings"),
           tabBarIcon: ({ color, focused }) => (
             <TabIcon name="settings-outline" color={color as string} focused={focused} />
           )

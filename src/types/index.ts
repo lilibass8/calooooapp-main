@@ -11,6 +11,8 @@ export type MealPortion = "small" | "medium" | "large";
 
 export type MealEstimationSource = "preset" | "manual-adjustment" | "legacy";
 
+export type Language = "ar" | "en";
+
 export type UserProfile = {
   name: string;
   weightKg: number;
@@ -32,6 +34,7 @@ export type Meal = {
 export type Settings = {
   darkMode: boolean;
   notificationsEnabled: boolean;
+  language: Language;
 };
 
 export type DailyStats = {

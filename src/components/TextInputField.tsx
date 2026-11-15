@@ -1,13 +1,14 @@
 import React from "react";
 import { Text, TextInput, TextInputProps, View, ViewStyle } from "react-native";
 import { colors, radii, spacing } from "../theme/design";
+import { useApp } from "../context/AppContext";
 
 type TextInputFieldProps = {
   label: string;
   value: string;
   onChangeText: (text: string) => void;
   placeholder?: string;
-  keyboardType?: "default" | "numeric";
+  keyboardType?: TextInputProps["keyboardType"];
   style?: ViewStyle;
   helperText?: string;
   editable?: boolean;
@@ -27,13 +28,15 @@ export const TextInputField: React.FC<TextInputFieldProps> = ({
   textAlign = "right",
   inputProps
 }) => {
+  const { language } = useApp();
+  const resolvedTextAlign = textAlign ?? (language === "ar" ? "right" : "left");
   return (
     <View style={[{ gap: 8 }, style]}>
       <Text
         style={{
           fontWeight: "700",
           color: colors.text,
-          textAlign: "right"
+          textAlign: resolvedTextAlign
         }}
       >
         {label}
@@ -55,8 +58,8 @@ export const TextInputField: React.FC<TextInputFieldProps> = ({
           backgroundColor: editable ? colors.white : colors.surfaceMuted,
           fontSize: 16,
           color: colors.text,
-          textAlign,
-          writingDirection: textAlign === "right" ? "rtl" : "ltr"
+          textAlign: resolvedTextAlign,
+          writingDirection: resolvedTextAlign === "right" ? "rtl" : "ltr"
         }}
         {...inputProps}
       />

@@ -10,9 +10,11 @@ import {
   getMealPortionLabel
 } from "../../src/services/calorieEstimator";
 import { colors, radii, spacing } from "../../src/theme/design";
+import { t } from "../../src/i18n";
 
 const HistoryScreen = () => {
-  const { historySections } = useApp();
+  const { historySections, language } = useApp();
+  const tx = (key: Parameters<typeof t>[1]) => t(language, key);
 
   return (
     <View style={{ flex: 1, backgroundColor: colors.background }}>
@@ -20,8 +22,8 @@ const HistoryScreen = () => {
         <View style={{ flex: 1, padding: spacing.lg, justifyContent: "center" }}>
           <Card>
             <EmptyState
-              title="السجل فارغ حتى الآن"
-              description="بعد حفظ أول وجبة ستظهر هنا مجمعة حسب التاريخ مع الصورة والحجم والسعرات."
+              title={tx("emptyHistory")}
+              description={tx("emptyHistoryDescription")}
               icon="time-outline"
             />
           </Card>
@@ -44,9 +46,17 @@ const HistoryScreen = () => {
               }}
             >
               <View style={{ alignItems: "flex-end", gap: 2 }}>
-                <Text style={{ color: colors.text, fontWeight: "800", fontSize: 18 }}>{section.title}</Text>
+                <Text style={{ color: colors.text, fontWeight: "800", fontSize: 18 }}>
+                  {section.key === "unknown"
+                    ? language === "ar" ? "سجلات غير معروفة التاريخ" : "Records with unknown date"
+                    : new Intl.DateTimeFormat(language === "ar" ? "ar" : "en", {
+                        weekday: "long",
+                        day: "numeric",
+                        month: "long"
+                      }).format(new Date(section.data[0].createdAt))}
+                </Text>
                 <Text style={{ color: colors.textMuted }}>
-                  {section.data.length} وجبة . {section.totalCalories} kcal
+                  {section.data.length} {section.data.length === 1 ? tx("meal") : tx("mealsCount")} . {section.totalCalories} {tx("kcal")}
                 </Text>
               </View>
               <View
@@ -73,7 +83,7 @@ const HistoryScreen = () => {
                 <View style={{ flex: 1, gap: 6 }}>
                   <View style={{ flexDirection: "row-reverse", justifyContent: "space-between", alignItems: "center" }}>
                     <Text style={{ fontWeight: "800", color: colors.text }}>
-                      {getMealCategoryLabel(item.category)}
+                      {getMealCategoryLabel(item.category, language)}
                     </Text>
                     <View
                       style={{
@@ -93,20 +103,20 @@ const HistoryScreen = () => {
                     </View>
                   </View>
                   <Text style={{ color: colors.textMuted, textAlign: "right" }}>
-                    {getMealPortionLabel(item.portion)} .{" "}
-                    {new Date(item.createdAt).toLocaleTimeString("ar", {
+                    {getMealPortionLabel(item.portion, language)} .{" "}
+                    {new Date(item.createdAt).toLocaleTimeString(language === "ar" ? "ar" : "en", {
                       hour: "numeric",
                       minute: "2-digit"
                     })}
                   </Text>
                   <View style={{ flexDirection: "row-reverse", justifyContent: "space-between", alignItems: "center" }}>
-                    <Text style={{ fontWeight: "800", color: colors.primaryStrong }}>{item.calories} kcal</Text>
+                    <Text style={{ fontWeight: "800", color: colors.primaryStrong }}>{item.calories} {tx("kcal")}</Text>
                     <Text style={{ color: colors.textSoft, fontSize: 12 }}>
                       {item.estimationSource === "manual-adjustment"
-                        ? "تم تعديله يدويًا"
+                        ? tx("manuallyAdjusted")
                         : item.estimationSource === "legacy"
-                          ? "سجل سابق"
-                          : "تقدير موجه"}
+                          ? tx("previousRecord")
+                          : tx("guidedEstimate")}
                     </Text>
                   </View>
                 </View>

@@ -28,9 +28,9 @@ export const storage = {
   async getSettings(): Promise<Settings> {
     const value = await AsyncStorage.getItem(KEYS.settings);
     if (!value) {
-      return { darkMode: false, notificationsEnabled: true };
+      return { darkMode: false, notificationsEnabled: true, language: "ar" };
     }
-    return JSON.parse(value) as Settings;
+    return { darkMode: false, notificationsEnabled: true, language: "ar", ...JSON.parse(value) } as Settings;
   },
   async setSettings(settings: Settings): Promise<void> {
     await AsyncStorage.setItem(KEYS.settings, JSON.stringify(settings));

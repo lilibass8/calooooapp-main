@@ -26,13 +26,16 @@ npm run start
 
 ## Supabase setup
 
-After adding the values to `.env`, run the SQL migration
-`supabase/migrations/20261112_fix_data_api_access.sql` in the Supabase SQL Editor.
-Then restart Expo with:
+After adding the values to `.env`, run
+`supabase/migrations/20261115_add_auth_isolation.sql` in the Supabase SQL Editor.
+It includes the required table grants, RLS policies, and the private
+`meal-images` bucket. Then restart Expo with:
 
 ```bash
 npx expo start -c
 ```
 
-The migration grants the Data API access required by the app and creates the
-`meal-images` storage bucket used for meal photos.
+It enables email/password authentication, links records to `auth.users`, and
+restricts rows and images to the signed-in user. If email confirmation is
+enabled in Supabase Auth, the user must confirm the email before completing the
+profile setup.

@@ -14,10 +14,12 @@ import {
   getMealPortionLabel
 } from "../../src/services/calorieEstimator";
 import { colors, radii, spacing } from "../../src/theme/design";
+import { t } from "../../src/i18n";
 
 const HomeScreen = () => {
   const router = useRouter();
-  const { user, todayMeals, dailyStats, refreshDaily } = useApp();
+  const { user, todayMeals, dailyStats, refreshDaily, language } = useApp();
+  const tx = (key: Parameters<typeof t>[1]) => t(language, key);
 
   useFocusEffect(
     useCallback(() => {
@@ -54,14 +56,13 @@ const HomeScreen = () => {
         />
         <View style={{ gap: 4 }}>
           <Text style={{ color: "rgba(255,255,255,0.74)", textAlign: "right", fontSize: 13 }}>
-            أهلاً بعودتك
+            {tx("helloAgain")}
           </Text>
           <Text style={{ color: colors.white, fontSize: 30, fontWeight: "800", textAlign: "right" }}>
-            {user?.name ?? "ضيفنا الصحي"}
+            {user?.name ?? tx("healthyGuest")}
           </Text>
           <Text style={{ color: "rgba(255,255,255,0.78)", textAlign: "right", lineHeight: 22 }}>
-            ملخصك اليومي أصبح أوضح: وجبات اليوم، التقدّم نحو الهدف، وآخر الوجبات المسجلة في
-            مكان واحد.
+            {tx("dailySummary")}
           </Text>
         </View>
 
@@ -70,15 +71,15 @@ const HomeScreen = () => {
             <Text style={{ color: colors.white, fontSize: 28, fontWeight: "800" }}>
               {dailyStats.goal} kcal
             </Text>
-            <Text style={{ color: "rgba(255,255,255,0.82)", textAlign: "right" }}>هدفك اليومي</Text>
+            <Text style={{ color: "rgba(255,255,255,0.82)", textAlign: "right" }}>{tx("dailyGoal")}</Text>
           </View>
           <ProgressBar progress={dailyStats.progress} />
           <View style={{ flexDirection: "row-reverse", justifyContent: "space-between" }}>
             <Text style={{ color: "rgba(255,255,255,0.78)" }}>
-              استهلكت {dailyStats.consumed} kcal
+              {tx("consumed")} {dailyStats.consumed} {tx("kcal")}
             </Text>
             <Text style={{ color: "rgba(255,255,255,0.78)" }}>
-              المتبقي {dailyStats.remaining} kcal
+              {tx("remaining")} {dailyStats.remaining} {tx("kcal")}
             </Text>
           </View>
         </View>
@@ -86,10 +87,10 @@ const HomeScreen = () => {
 
       <View style={{ flexDirection: "row-reverse", flexWrap: "wrap", gap: spacing.sm }}>
         {[
-          { label: "الهدف", value: `${dailyStats.goal}`, icon: "flag-outline" },
-          { label: "المستهلك", value: `${dailyStats.consumed}`, icon: "flame-outline" },
-          { label: "المتبقي", value: `${dailyStats.remaining}`, icon: "sparkles-outline" },
-          { label: "الوجبات", value: `${dailyStats.mealCount}`, icon: "restaurant-outline" }
+          { label: tx("dailyGoal"), value: `${dailyStats.goal}`, icon: "flag-outline" },
+          { label: tx("consumed"), value: `${dailyStats.consumed}`, icon: "flame-outline" },
+          { label: tx("remaining"), value: `${dailyStats.remaining}`, icon: "sparkles-outline" },
+          { label: tx("meals"), value: `${dailyStats.mealCount}`, icon: "restaurant-outline" }
         ].map((item) => (
           <Card key={item.label} style={{ width: "48%", gap: 10 }}>
             <Ionicons name={item.icon as any} size={18} color={colors.primaryStrong} />
@@ -112,15 +113,15 @@ const HomeScreen = () => {
       <Card style={{ gap: spacing.md }}>
         <View style={{ gap: 4 }}>
           <Text style={{ color: colors.text, fontSize: 20, fontWeight: "800", textAlign: "right" }}>
-            ابدأ تسجيل وجبة جديدة
+            {tx("newMeal")}
           </Text>
           <Text style={{ color: colors.textMuted, textAlign: "right", lineHeight: 22 }}>
-            صوّر وجبتك، حدّد نوعها وحجمها، ثم احفظها مباشرة داخل سجل اليوم.
+            {tx("newMealDescription")}
           </Text>
         </View>
         <PrimaryButton
-          label="فتح شاشة المسح"
-          subtitle="تصوير ومراجعة ثم حفظ"
+          label={tx("openScanner")}
+          subtitle={tx("photoReviewSave")}
           onPress={() => router.push("/(tabs)/camera")}
           icon={<Ionicons name="camera-outline" size={18} color={colors.white} />}
         />
@@ -129,16 +130,16 @@ const HomeScreen = () => {
       <Card style={{ gap: spacing.md }}>
         <View style={{ gap: 4 }}>
           <Text style={{ color: colors.text, fontSize: 20, fontWeight: "800", textAlign: "right" }}>
-            وجبات اليوم
+            {tx("todaysMeals")}
           </Text>
           <Text style={{ color: colors.textMuted, textAlign: "right" }}>
-            آخر ثلاث وجبات سجلتها اليوم تظهر هنا سريعًا.
+            {tx("lastThree")}
           </Text>
         </View>
         {todayMeals.length === 0 ? (
           <EmptyState
-            title="لا توجد وجبات اليوم"
-            description="التقط أول وجبة وسيظهر ملخصها هنا مع الفئة والحجم والسعرات."
+            title={tx("noMeals")}
+            description={tx("noMealsDescription")}
             icon="camera-outline"
           />
         ) : (
@@ -162,7 +163,7 @@ const HomeScreen = () => {
                 <View style={{ flex: 1, gap: 4 }}>
                   <View style={{ flexDirection: "row-reverse", justifyContent: "space-between", alignItems: "center" }}>
                     <Text style={{ color: colors.text, fontWeight: "800" }}>
-                      {getMealCategoryLabel(meal.category)}
+                      {getMealCategoryLabel(meal.category, language)}
                     </Text>
                     <View
                       style={{
@@ -182,14 +183,14 @@ const HomeScreen = () => {
                     </View>
                   </View>
                   <Text style={{ color: colors.textMuted, textAlign: "right" }}>
-                    {getMealPortionLabel(meal.portion)} .{" "}
-                    {new Date(meal.createdAt).toLocaleTimeString("ar", {
+                    {getMealPortionLabel(meal.portion, language)} .{" "}
+                    {new Date(meal.createdAt).toLocaleTimeString(language === "ar" ? "ar" : "en", {
                       hour: "numeric",
                       minute: "2-digit"
                     })}
                   </Text>
                   <Text style={{ color: colors.primaryStrong, fontWeight: "800", textAlign: "right" }}>
-                    {meal.calories} kcal
+                    {meal.calories} {tx("kcal")}
                   </Text>
                 </View>
               </View>

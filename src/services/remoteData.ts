@@ -44,12 +44,13 @@ const toUser = (data: DbUser): UserProfile => ({
 
 const toSettings = (data: DbSettings | null): Settings => {
   if (!data) {
-    return { darkMode: false, notificationsEnabled: true };
+    return { darkMode: false, notificationsEnabled: true, language: "ar" };
   }
 
   return {
     darkMode: data.dark_mode,
-    notificationsEnabled: data.notifications_enabled
+    notificationsEnabled: data.notifications_enabled,
+    language: "ar"
   };
 };
 
@@ -63,6 +64,26 @@ const toMeal = (data: DbMeal): Meal => ({
   portion: data.portion ?? null,
   estimationSource: data.estimation_source ?? undefined
 });
+
+const signedImageUrl = async (client: NonNullable<typeof supabase>, imagePath: string) => {
+  const { data, error } = await client.storage
+    .from(SUPABASE_BUCKET)
+    .createSignedUrl(imagePath, 60 * 60 * 24 * 365);
+  if (error) throw error;
+  return data.signedUrl;
+};
+
+const toMealsWithSignedUrls = async (
+  client: NonNullable<typeof supabase>,
+  data: DbMeal[]
+): Promise<Meal[]> => {
+  return Promise.all(
+    data.map(async (meal) => ({
+      ...toMeal(meal),
+      imageUri: await signedImageUrl(client, meal.image_path)
+    }))
+  );
+};
 
 // React Native's Blob implementation does not expose blob.arrayBuffer() on
 // all Expo runtimes. Supabase Storage accepts the Blob returned by fetch
@@ -90,7 +111,7 @@ export const remoteData = {
     const { data, error } = await client
       .from("profiles")
       .select("name, weight_kg, height_cm, daily_calorie_goal")
-      .eq("id", profileId)
+      .eq("user_id", profileId)
       .maybeSingle();
 
     if (error) throw error;
@@ -101,6 +122,7 @@ export const remoteData = {
     const client = assertClient();
     const payload = {
       id: profileId,
+      user_id: profileId,
       name: user.name,
       weight_kg: user.weightKg,
       height_cm: user.heightCm,
@@ -116,7 +138,7 @@ export const remoteData = {
     const { data, error } = await client
       .from("settings")
       .select("dark_mode, notifications_enabled")
-      .eq("profile_id", profileId)
+      .eq("user_id", profileId)
       .maybeSingle();
 
     if (error) throw error;
@@ -127,6 +149,7 @@ export const remoteData = {
     const client = assertClient();
     const payload = {
       profile_id: profileId,
+      user_id: profileId,
       dark_mode: settings.darkMode,
       notifications_enabled: settings.notificationsEnabled
     };
@@ -141,16 +164,16 @@ export const remoteData = {
       const { data, error } = await client
         .from("meals")
         .select(extendedMealSelect)
-        .eq("profile_id", profileId)
+        .eq("user_id", profileId)
         .order("created_at", { ascending: false });
 
       if (error) throw error;
-      return (data as DbMeal[]).map(toMeal);
+      return toMealsWithSignedUrls(client, data as DbMeal[]);
     } catch (error) {
       const { data, error: legacyError } = await client
         .from("meals")
         .select(legacyMealSelect)
-        .eq("profile_id", profileId)
+        .eq("user_id", profileId)
         .order("created_at", { ascending: false });
 
       if (legacyError) {
@@ -158,7 +181,7 @@ export const remoteData = {
       }
 
       console.warn("Falling back to legacy meals schema:", error);
-      return (data as DbMeal[]).map(toMeal);
+      return toMealsWithSignedUrls(client, data as DbMeal[]);
     }
   },
 
@@ -175,13 +198,14 @@ export const remoteData = {
 
     if (upload.error) throw upload.error;
 
-    const publicUrl = client.storage.from(SUPABASE_BUCKET).getPublicUrl(imagePath).data.publicUrl;
+    const imageUrl = await signedImageUrl(client, imagePath);
     const payload = {
       id: meal.id,
       profile_id: profileId,
+      user_id: profileId,
       calories: meal.calories,
       image_path: imagePath,
-      image_url: publicUrl,
+      image_url: imageUrl,
       created_at: meal.createdAt,
       category: meal.category ?? null,
       portion: meal.portion ?? null,
@@ -201,9 +225,10 @@ export const remoteData = {
       const legacyPayload = {
         id: meal.id,
         profile_id: profileId,
+        user_id: profileId,
         calories: meal.calories,
         image_path: imagePath,
-        image_url: publicUrl,
+        image_url: imageUrl,
         created_at: meal.createdAt
       };
 

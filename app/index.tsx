@@ -3,19 +3,22 @@ import { ActivityIndicator, Text, View } from "react-native";
 import { useRouter } from "expo-router";
 import { useApp } from "../src/context/AppContext";
 import { colors } from "../src/theme/design";
+import { t } from "../src/i18n";
 
 const Index = () => {
   const router = useRouter();
-  const { user, isLoading } = useApp();
+  const { user, authUser, authReady, isLoading, language } = useApp();
 
   useEffect(() => {
-    if (isLoading) return;
-    if (user) {
+    if (!authReady || isLoading) return;
+    if (!authUser) {
+      router.replace("/auth");
+    } else if (user) {
       router.replace("/(tabs)/home");
     } else {
       router.replace("/onboarding");
     }
-  }, [isLoading, user, router]);
+  }, [authReady, authUser, isLoading, user, router]);
 
   return (
     <View
@@ -28,7 +31,7 @@ const Index = () => {
       }}
     >
       <ActivityIndicator size="large" color={colors.primaryStrong} />
-      <Text style={{ color: colors.text, fontWeight: "700" }}>جاري تجهيز تجربتك الصحية...</Text>
+      <Text style={{ color: colors.text, fontWeight: "700" }}>{t(language, "appLoading")}</Text>
     </View>
   );
 };
