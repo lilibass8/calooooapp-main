@@ -27,7 +27,7 @@ npm run start
 ## Supabase setup
 
 After adding the values to `.env`, run
-`supabase/migrations/20261115_add_auth_isolation.sql` in the Supabase SQL Editor.
+`supabase/fix_save_error.sql` in the Supabase SQL Editor.
 It includes the required table grants, RLS policies, and the private
 `meal-images` bucket. Then restart Expo with:
 

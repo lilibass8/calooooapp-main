@@ -101,6 +101,7 @@ const CameraScreen = () => {
       resetReview();
     } catch (error) {
       const message = error instanceof Error ? error.message : tx("unableSave");
+      console.error("Meal save failed:", error);
       Alert.alert(tx("unableSave"), `${message}\n\n${language === "ar" ? "تأكد من إعداد جداول Supabase و bucket الصور." : "Check your Supabase tables and image bucket setup."}`);
     }
   };
