@@ -28,6 +28,7 @@ const CameraScreen = () => {
   const [estimatedCalories, setEstimatedCalories] = useState<number | null>(null);
   const [caloriesInput, setCaloriesInput] = useState("");
   const [isCaloriesEdited, setIsCaloriesEdited] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
   const { addMeal, language } = useApp();
   const tx = (key: Parameters<typeof t>[1]) => t(language, key);
 
@@ -83,6 +84,7 @@ const CameraScreen = () => {
   };
 
   const handleAddMeal = async () => {
+    if (isSaving) return;
     if (!photoUri || !selectedCategory || selectedCategory === "not-food" || !selectedPortion) return;
     const calories = Number(caloriesInput);
     if (!calories || calories <= 0) return;
@@ -96,13 +98,17 @@ const CameraScreen = () => {
       portion: selectedPortion,
       estimationSource: isCaloriesEdited ? "manual-adjustment" : "preset"
     };
+    setIsSaving(true);
     try {
       await addMeal(meal);
       resetReview();
+      Alert.alert(language === "ar" ? "تمت الإضافة" : "Meal added", language === "ar" ? "تم حفظ الوجبة في يومك." : "The meal was saved to your day.");
     } catch (error) {
       const message = error instanceof Error ? error.message : tx("unableSave");
       console.error("Meal save failed:", error);
       Alert.alert(tx("unableSave"), `${message}\n\n${language === "ar" ? "تأكد من إعداد جداول Supabase و bucket الصور." : "Check your Supabase tables and image bucket setup."}`);
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -273,20 +279,22 @@ const CameraScreen = () => {
                   }
                 />
 
-                <View style={{ flexDirection: "row-reverse", gap: spacing.sm }}>
+                <Text style={{ color: colors.textMuted, textAlign: "right", fontSize: 13 }}>
+                  {tx("saveMealDetails")}
+                </Text>
+                <View style={{ flexDirection: "row-reverse", gap: spacing.sm, alignItems: "stretch" }}>
                   <PrimaryButton
                     label={tx("addToToday")}
-                    subtitle={tx("saveMealDetails")}
-                    onPress={handleAddMeal}
-                    disabled={!selectedPortion || !caloriesInput}
-                    style={{ flex: 1 }}
+                    onPress={() => void handleAddMeal()}
+                    disabled={isSaving || !selectedPortion || !caloriesInput}
+                    style={{ flex: 1, minWidth: 0 }}
                     icon={<Ionicons name="add-circle-outline" size={18} color={colors.white} />}
                   />
                   <PrimaryButton
                     label={tx("retake")}
                     onPress={resetReview}
                     variant="secondary"
-                    style={{ flex: 1 }}
+                    style={{ flex: 1, minWidth: 0 }}
                     icon={<Ionicons name="camera-reverse-outline" size={18} color={colors.text} />}
                   />
                 </View>

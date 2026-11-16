@@ -75,9 +75,23 @@ export const PrimaryButton: React.FC<PrimaryButtonProps> = ({
       <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 8 }}>
         {icon}
         <View style={{ alignItems: "center", gap: 2 }}>
-          <Text style={{ color: resolvedText, fontWeight: "700", fontSize: 16 }}>{label}</Text>
+          <Text
+            style={{ color: resolvedText, fontWeight: "700", fontSize: 16, textAlign: "center" }}
+            numberOfLines={1}
+            adjustsFontSizeToFit
+            minimumFontScale={0.8}
+          >
+            {label}
+          </Text>
           {subtitle ? (
-            <Text style={{ color: resolvedText, opacity: 0.72, fontSize: 12 }}>{subtitle}</Text>
+            <Text
+              style={{ color: resolvedText, opacity: 0.72, fontSize: 12, textAlign: "center" }}
+              numberOfLines={2}
+              adjustsFontSizeToFit
+              minimumFontScale={0.75}
+            >
+              {subtitle}
+            </Text>
           ) : null}
         </View>
       </View>
